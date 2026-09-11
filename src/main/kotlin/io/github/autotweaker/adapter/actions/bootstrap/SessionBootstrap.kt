@@ -1,5 +1,6 @@
 package io.github.autotweaker.adapter.actions.bootstrap
 
+import io.github.autotweaker.adapter.actions.github.WorkflowCommand
 import io.github.autotweaker.adapter.actions.input.ActionInputs
 import io.github.autotweaker.api.adapter.Agent
 import io.github.autotweaker.api.adapter.CoreAPI
@@ -12,6 +13,7 @@ object SessionBootstrap {
 	suspend fun configure(core: CoreAPI, inputs: ActionInputs, modelId: UUID): Agent {
 		val workspace = core.workspace.create("actions", workspacePath(inputs))
 		val sessionId = core.session.create(workspace.id, modelConfig(inputs, modelId))
+		WorkflowCommand.notice("Workspace ${workspace.path}")
 		val session = core.session.restore(sessionId)
 		return session.restore(session.agentIndex.value.main.id)
 	}

@@ -1,5 +1,6 @@
 package io.github.autotweaker.adapter.actions.runtime
 
+import io.github.autotweaker.adapter.actions.github.SessionLogger
 import io.github.autotweaker.api.adapter.Agent
 import io.github.autotweaker.api.adapter.CoreAPI
 import io.github.autotweaker.api.types.agent.AgentStatus
@@ -18,7 +19,9 @@ class AgentRunner(
 	private val prompt: String,
 ) {
 	suspend fun run() = coroutineScope {
+		val logger = SessionLogger(core, agent)
 		val approveJob = launch { ToolAutoApprover(core, agent).run() }
+		val loggerJob = launch { logger.run() }
 		agent.send(
 			MessageContent(
 				content = prompt.toContentPart(),
@@ -39,5 +42,6 @@ class AgentRunner(
 		if (agent.status.value != AgentStatus.FAILED) {
 			agent.context.first { it.index.currentRound == null }
 		}
+		loggerJob.cancel()
 	}
 }

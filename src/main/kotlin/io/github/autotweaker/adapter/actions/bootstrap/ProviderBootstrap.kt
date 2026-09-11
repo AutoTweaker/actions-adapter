@@ -1,5 +1,6 @@
 package io.github.autotweaker.adapter.actions.bootstrap
 
+import io.github.autotweaker.adapter.actions.github.WorkflowCommand
 import io.github.autotweaker.adapter.actions.input.ActionInputs
 import io.github.autotweaker.api.UUID
 import io.github.autotweaker.api.adapter.CoreAPI
@@ -25,16 +26,24 @@ object ProviderBootstrap {
 			)
 		)
 		
+		val modelInfo = info.models.find { it.modelId == inputs.modelId }
+			?: fallback(inputs.modelId).also {
+				WorkflowCommand.warning(
+					"Unknown model ${inputs.modelId}  falling back to default capabilities"
+				)
+			}
+		
 		val modelId = UUID()
 		setModel(
 			ModelData(
 				id = modelId,
 				displayName = inputs.modelId,
-				modelInfo = info.models.find { it.modelId == inputs.modelId } ?: fallback(inputs.modelId),
+				modelInfo = modelInfo,
 				providerId = providerId,
 			)
 		)
 		
+		WorkflowCommand.notice("Provider ${info.name}  model ${inputs.modelId}")
 		return@with modelId
 	}
 	

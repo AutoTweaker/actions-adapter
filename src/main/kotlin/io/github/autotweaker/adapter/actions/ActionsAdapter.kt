@@ -3,14 +3,19 @@ package io.github.autotweaker.adapter.actions
 import com.google.auto.service.AutoService
 import io.github.autotweaker.adapter.actions.bootstrap.ProviderBootstrap
 import io.github.autotweaker.adapter.actions.bootstrap.SessionBootstrap
+import io.github.autotweaker.adapter.actions.github.CoreLogForwarder
 import io.github.autotweaker.adapter.actions.github.SessionMarkdown
+import io.github.autotweaker.adapter.actions.github.WorkflowCommand
 import io.github.autotweaker.adapter.actions.github.WorkflowFile
 import io.github.autotweaker.adapter.actions.input.ActionInputs
 import io.github.autotweaker.adapter.actions.runtime.AgentRunner
-import io.github.autotweaker.api.*
+import io.github.autotweaker.api.Loggable
+import io.github.autotweaker.api.Traceable
 import io.github.autotweaker.api.adapter.Adapter
 import io.github.autotweaker.api.adapter.CoreAPI
 import io.github.autotweaker.api.base.catching
+import io.github.autotweaker.api.scope
+import io.github.autotweaker.api.trace
 import io.github.autotweaker.api.types.KebabCase.Companion.toKebab
 import io.github.autotweaker.api.types.SemVer
 import io.github.autotweaker.api.types.Url.Companion.toUrl
@@ -21,7 +26,7 @@ import java.util.*
 import kotlin.system.exitProcess
 
 @AutoService(Adapter::class)
-class ActionsAdapter : Adapter, Loggable, Traceable {
+class ActionsAdapter : Adapter, Traceable, Loggable {
 	private val info = AdapterInfo(
 		name = "actions-adapter".toKebab(),
 		description = "GitHub Actions integration adapter",
@@ -39,10 +44,12 @@ class ActionsAdapter : Adapter, Loggable, Traceable {
 	
 	override suspend fun start() {
 		job = scope.launch {
+			launch { CoreLogForwarder(core).run() }
 			trace.catching { run() }
 				.ensureActive()
 				.onFailure {
-					log.error("Failed to complete the task", it)
+					WorkflowCommand.error("Failed to complete the task: $it")
+					WorkflowCommand.debug(it.stackTraceToString())
 					exitProcess(1)
 				}
 		}
@@ -54,10 +61,14 @@ class ActionsAdapter : Adapter, Loggable, Traceable {
 	
 	private suspend fun run() {
 		val inputs = ActionInputs.fromEnv()
+		WorkflowCommand.notice("Started ${info.name} ${info.version}")
 		val modelId = ProviderBootstrap.configure(core, inputs)
 		val agent = SessionBootstrap.configure(core, inputs, modelId)
 		AgentRunner(core, agent, inputs.prompt).run()
-		WorkflowFile.appendSummary(SessionMarkdown(core, agent.context.value.index).render())
+		WorkflowCommand.notice("Agent stopped  status=${agent.status.value}")
+		if (WorkflowFile.appendSummary(SessionMarkdown(core, agent.context.value.index).render())) {
+			WorkflowCommand.notice("Summary written")
+		}
 		exitProcess(0)
 	}
 	

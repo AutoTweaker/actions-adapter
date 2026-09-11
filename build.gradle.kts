@@ -37,12 +37,12 @@ repositories {
 }
 
 dependencies {
-	compileOnly(libs.autotweaker.api)
-	compileOnly(libs.slf4j.api)
+	implementation(libs.autotweaker.api)
 	implementation(libs.kotlinx.serialization.json)
 	implementation(libs.kotlinx.coroutines.core)
+	implementation(libs.kotlinx.datetime)
 	
-	compileOnly(libs.auto.service.annotations)
+	implementation(libs.auto.service.annotations)
 	kapt(libs.auto.service)
 }
 
