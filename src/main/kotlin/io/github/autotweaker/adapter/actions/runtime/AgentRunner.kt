@@ -2,6 +2,7 @@ package io.github.autotweaker.adapter.actions.runtime
 
 import io.github.autotweaker.api.adapter.Agent
 import io.github.autotweaker.api.adapter.CoreAPI
+import io.github.autotweaker.api.types.agent.AgentStatus
 import io.github.autotweaker.api.types.agent.ContextInjection
 import io.github.autotweaker.api.types.agent.MessageContent
 import io.github.autotweaker.api.types.llm.toContentPart
@@ -35,5 +36,8 @@ class AgentRunner(
 		delay(5.milliseconds)
 		agent.status.first { it.stopped }
 		approveJob.cancel()
+		if (agent.status.value != AgentStatus.FAILED) {
+			agent.context.first { it.index.currentRound == null }
+		}
 	}
 }
