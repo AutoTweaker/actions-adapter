@@ -3,7 +3,6 @@ package io.github.autotweaker.adapter.actions.github
 import io.github.autotweaker.api.adapter.Agent
 import io.github.autotweaker.api.adapter.CoreAPI
 import io.github.autotweaker.api.base.session.diff
-import io.github.autotweaker.api.base.unifiedDiff
 import io.github.autotweaker.api.types.agent.AgentContext
 import io.github.autotweaker.api.types.agent.AgentContextIndex.Turn
 import io.github.autotweaker.api.types.agent.AgentMessage
@@ -85,11 +84,11 @@ class SessionLogger(
 	private fun print(message: AgentMessage) = when (message) {
 		is AgentMessage.User -> message.content.content
 			?.filterIsInstance<ContentPart.Text>()
-			?.forEach { WorkflowCommand.notice("> ${it.content}") }
-		
+			?.forEach { emit("> ${it.content}") }
+
 		is AgentMessage.Assistant -> {
 			message.reasoning?.let(WorkflowCommand::debug)
-			message.content?.let(WorkflowCommand::notice)
+			message.content?.let(::emit)
 		}
 		
 		is AgentMessage.Tool.Result -> print(message.presentation)
@@ -97,15 +96,9 @@ class SessionLogger(
 		else -> {}
 	}
 	
-	private fun print(presentation: ToolPresentation) = presentation.forEach(::print)
-	
-	private fun print(block: UiBlock) = when (block) {
-		is UiBlock.Text -> emit(block.content)
-		is UiBlock.Command -> emit(block.command)
-		is UiBlock.Diff -> unifiedDiff(block.oldContent, block.newContent)?.let(::emit)
-		is UiBlock.Error -> WorkflowCommand.error(block.content)
-		is UiBlock.Output -> emit(block.content)
-	}
+	private fun print(presentation: ToolPresentation) = presentation
+		.filterIsInstance<UiBlock.Text>()
+		.forEach { emit(it.content) }
 	
 	private fun emit(text: String) = println(text)
 }
