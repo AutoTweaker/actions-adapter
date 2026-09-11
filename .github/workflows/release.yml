@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  packages: read
 
 jobs:
   release:
@@ -22,6 +23,14 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
+
+      - name: Setup Gradle credentials
+        run: |
+          mkdir -p ~/.gradle
+          cat >> ~/.gradle/gradle.properties <<EOF
+          gpr.user=${{ github.actor }}
+          gpr.key=${{ secrets.GITHUB_TOKEN }}
+          EOF
 
       - name: Build
         run: ./gradlew build
