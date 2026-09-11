@@ -4,6 +4,7 @@ autotweaker = "0.2.0-alpha.3+92e1e122"
 serialization = "1.11.0"
 coroutines = "1.11.0"
 autoService = "1.1.1"
+slf4j = "2.0.18"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -17,3 +18,4 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
 auto-service = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }

@@ -38,6 +38,7 @@ repositories {
 
 dependencies {
 	compileOnly(libs.autotweaker.api)
+	compileOnly(libs.slf4j.api)
 	implementation(libs.kotlinx.serialization.json)
 	implementation(libs.kotlinx.coroutines.core)
 	
