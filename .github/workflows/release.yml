@@ -35,33 +35,53 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-  update-latest:
+  update-index:
     needs: release
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
+      - name: Extract version from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_ENV"
 
-      - name: Update latest.json
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.WEBSITE_DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Clone index repository
+        run: git clone git@github.com:AutoTweaker/index.git .temp/index
+        env:
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/deploy_key
+
+      - name: Update adapter/actions.json
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
           JAR=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[0].name')
-          cat > latest.json <<EOF
+          mkdir -p .temp/index/adapter
+          cat > .temp/index/adapter/actions.json <<EOF
           {
-            "version": "$VERSION",
-            "jar_url": "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${JAR}"
+            "repo_url": "https://github.com/${GITHUB_REPOSITORY}",
+            "latest": {
+              "version": "${VERSION}",
+              "jar_url": "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${JAR}"
+            }
           }
           EOF
+
+      - name: Push index update
+        working-directory: .temp/index
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add latest.json
+          git add adapter/actions.json
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Update latest.json to ${VERSION}"
+            git commit -m "Update actions-adapter to v${VERSION}"
             git push origin main
           fi
+        env:
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/deploy_key
