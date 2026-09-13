@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.4.10"
-autotweaker = "0.2.0-alpha.5+b41e827d"
+autotweaker = "0.2.0-alpha.7+5d41fd9a"
 serialization = "1.11.0"
 coroutines = "1.11.0"
 datetime = "0.8.0-0.6.x-compat"
@@ -10,10 +10,9 @@ autoService = "1.1.1"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-toolgen = { id = "io.github.autotweaker.toolgen", version.ref = "autotweaker" }
+autotweaker-plugin-sdk = { id = "io.github.autotweaker.plugin.sdk", version.ref = "autotweaker" }
 
 [libraries]
-autotweaker-api = { module = "io.github.autotweaker:api", version.ref = "autotweaker" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
