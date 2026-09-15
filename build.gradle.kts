@@ -11,14 +11,6 @@ kotlin {
 
 repositories {
 	mavenCentral()
-	maven {
-		name = "GitHubPackages"
-		url = uri("https://maven.pkg.github.com/AutoTweaker/core")
-		credentials {
-			username = providers.gradleProperty("gpr.user").getOrElse("")
-			password = providers.gradleProperty("gpr.key").getOrElse("")
-		}
-	}
 }
 
 dependencies {
