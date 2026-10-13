@@ -11,7 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class AgentRunner(
 	private val core: CoreAPI,
@@ -36,7 +36,7 @@ class AgentRunner(
 				),
 			)
 		).await()
-		delay(5.milliseconds)
+		delay(5.seconds)
 		agent.status.first { it.stopped }
 		approveJob.cancel()
 		if (agent.status.value != AgentStatus.FAILED) {
